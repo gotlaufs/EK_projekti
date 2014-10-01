@@ -15,7 +15,10 @@
             text-align:center;
         }
         .colortable{
-            margin-top:150px;
+            margin-top:70px;
+        }
+        .headertable td{
+            height:20px;
         }
         .colorbox{
             background-color:#000;
@@ -44,6 +47,14 @@
             width:100%;
             top:0px;
             background: #FFF;
+            z-index:10;
+            border-bottom: 1px solid grey;
+        }
+        .disableSelect{
+            -webkit-user-select: none;  
+            -moz-user-select: none;    
+            -ms-user-select: none;      
+            user-select: none;
         }
    </style>
 <head>
@@ -52,19 +63,20 @@
 
 </head>
 <body>
-     <div class="headerDiv">
+     <div class="headerDiv disableSelect">
+        
+        <input class="rowInput" type="number" value="1"/>
+        <input class="addButton" type="button" value="Add row(s)"/>
+        <input class="dumpButton" type="button" value="Dump data"/>
+        <input class="copyButton" type="button" value="Enter copy mode"/>
          <table class="headertable">
             <tr>
                 <td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td style="border:none"></td>
             </tr>
         </table>
-        <input class="rowInput" type="number" value="1"/>
-        <input class="addButton" type="button" value="Add row(s)"/>
-        <input class="dumpButton" type="button" value="Dump data"/>
-        <input class="copyButton" type="button" value="Enter copy mode"/>
     </div>
 
-    <table class="colortable">
+    <table class="colortable disableSelect">
     </table>
    
     <br/><br/>
@@ -78,6 +90,7 @@ var copied_rgb = 0;
 document.body.onmousedown = function() { 
     mouseDown = 1;
 }
+
 document.body.onmouseup = function() {
     mouseDown = 0;
     if(block_exited){
@@ -114,7 +127,7 @@ $(document).ready(function(){
             return;
         }
         copy_mode = 1;
-        $(this).val("Click cell to copy\n or \nClick here to cancel");
+        $(this).val("Click cell to copy -or- Click here to cancel");
     })
 
     $(document).on("mousedown", ".colorbox", function() {
@@ -122,7 +135,7 @@ $(document).ready(function(){
             case 1:
                 copied_rgb = $(this).css("background-color");
                 copy_mode = 2;
-                $(".copyButton").val("Click cell to paste\n or \nClick here to cancel");
+                $(".copyButton").val("Click cell to paste -or- Click here to cancel");
                 break;
             case 2:
                 $(this).closest('td').css("background-color", copied_rgb);
@@ -191,19 +204,18 @@ $(document).ready(function(){
                .split(',');
             
         var slider_value = $(this).slider("option", "value");
-        console.log($(this).slider("option", "value"));
-
         switch($(this).attr("id")){
             case "R":
-                $(this).closest('td').css("background-color","rgb(" + (slider_value * 17) + "," + rgb[1] + "," + rgb[2] + ")"); 
+                rgb[0] = (slider_value * 17); 
                 break;
             case "G":
-                $(this).closest('td').css("background-color","rgb(" + rgb[0] + "," + Math.ceil(slider_value*8.2258) + "," + rgb[2] + ")"); 
+                rgb[1] = Math.ceil(slider_value*8.2258); 
                 break;
             case "B":
-                $(this).closest('td').css("background-color","rgb(" + rgb[0] + "," + rgb[1] + "," + slider_value * 17 + ")"); 
+                rgb[2] =  slider_value * 17 ; 
                 break;
         }
+        $(this).parent().css("background-color","rgb(" + rgb.join()+ ")");
     };
     
     $(".dumpButton").click(function(){
