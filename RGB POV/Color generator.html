@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<!-- JQuery includes -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/themes/smoothness/jquery-ui.css" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+<!-- End of includes -->
+
+   <style>
+        .colortable td, .headertable td{
+            border:1px solid black;
+            border-radius: 15px;
+            width:80px;
+            height:80px;
+            text-align:center;
+        }
+        .colortable{
+            margin-top:150px;
+        }
+        .colorbox{
+            background-color:#000;
+        }
+        .colorinput{
+            width: 5px;
+            height: 64px;
+            display: inline-block;
+            margin: 5px;
+        }
+        .rowInput{
+            width: 40px;
+        }
+        .ui-slider .ui-slider-handle{
+            width: 15px;
+            height: 10px;
+            margin-top: -4px;    
+            padding: 0px;       
+        }
+        #dump{
+            background: #EEE;
+            font-family: "Courier New", Courier, monospace;
+        }
+        .headerDiv{
+            position:fixed;
+            width:100%;
+            top:0px;
+            background: #FFF;
+        }
+   </style>
+<head>
+
+
+
+</head>
+<body>
+     <div class="headerDiv">
+         <table class="headertable">
+            <tr>
+                <td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td style="border:none"></td>
+            </tr>
+        </table>
+        <input class="rowInput" type="number" value="1"/>
+        <input class="addButton" type="button" value="Add row(s)"/>
+        <input class="dumpButton" type="button" value="Dump data"/>
+        <input class="copyButton" type="button" value="Enter copy mode"/>
+    </div>
+
+    <table class="colortable">
+    </table>
+   
+    <br/><br/>
+    <div id="dump"></div>
+<script>
+var mouse_down = 0;
+var block_exited = 0;
+var copy_mode = 0;
+var copied_rgb = 0;
+
+document.body.onmousedown = function() { 
+    mouseDown = 1;
+}
+document.body.onmouseup = function() {
+    mouseDown = 0;
+    if(block_exited){
+        block_exited = 0;
+        $(".withSliders").empty();
+    }
+}
+
+$(document).ready(function(){
+
+    $(document).on('click', '.delButton', function(){
+        $(this).closest('tr').remove();   
+    });
+    
+    $(".addButton").click(function(){
+        var text="<tr>";
+        var row_count = $(".rowInput").val();
+        for(var i=0; i<row_count; i++){
+            for(var k=0;k<8;k++)
+                text += "<td class='colorbox'></td>";
+
+            text += "<td style='border:none'> \
+                    <input class='delButton' type='button' value='Remove Row'> \
+                    </input></td></tr>";
+        }
+
+        $(".colortable").append(text);
+    });
+    
+    $(".copyButton").click(function(){
+        if(copy_mode){
+            copy_mode = 0;
+            $(this).val("Enter copy mode");
+            return;
+        }
+        copy_mode = 1;
+        $(this).val("Click cell to copy\n or \nClick here to cancel");
+    })
+
+    $(document).on("mousedown", ".colorbox", function() {
+        switch(copy_mode){
+            case 1:
+                copied_rgb = $(this).css("background-color");
+                copy_mode = 2;
+                $(".copyButton").val("Click cell to paste\n or \nClick here to cancel");
+                break;
+            case 2:
+                $(this).closest('td').css("background-color", copied_rgb);
+                break;
+        }            
+    });
+
+    $(document).on("mouseenter", ".colorbox", function() {
+        if( mouseDown || copy_mode ){
+            if( $(this).hasClass("withSliders") )
+                block_exited = 0;
+            return;
+        }
+        $(".withSliders").empty();
+        $(this).addClass("withSliders");
+        $(this).append("<div class='colorinput' id='R'></div> \
+                        <div class='colorinput' id='G'></div> \
+                        <div class='colorinput' id='B'></div>");    
+        rgb=$(this).css("background-color");
+        rgb=rgb.substring(4, rgb.length-1)
+            .replace(/ /g, '')
+            .split(',');
+        
+        $('.colorinput').slider({
+             orientation: "vertical",
+             min:  0,
+             max:  15,
+             step: 1,
+             slide: colourHandler,
+             change: colourHandler
+        });
+
+        $(this).find("#G").slider( "option", "max", 31);
+
+        $(this).find("#R").slider( "option", "value", rgb[0]/17);
+        $(this).find("#G").slider( "option", "value", Math.round(rgb[1]/8.2258));
+        $(this).find("#B").slider( "option", "value", rgb[2]/17);
+    });
+
+    $(document).on("mouseleave", ".colorbox", function() {
+        if( !mouseDown ){
+            $(this).removeClass("withSliders");
+            $(this).empty();
+        }
+        else
+            block_exited = 1;
+
+    });
+    
+    function colourHandler(){
+        // Restrict user to predefined color resolutions
+        if($(this).attr("id") == "G")
+            var limit=31;
+        else
+            var limit=15;
+
+        if($(this).slider("option", "value") > limit)
+            $(this).slider("option", "value", limit);
+        else if($(this).val()<0)
+            $(this).slider("option", "value", 0);
+        
+        var rgb = $( this ).closest('td').css("background-color");
+
+        rgb=rgb.substring(4, rgb.length-1)
+               .replace(/ /g, '')
+               .split(',');
+            
+        var slider_value = $(this).slider("option", "value");
+        console.log($(this).slider("option", "value"));
+
+        switch($(this).attr("id")){
+            case "R":
+                $(this).closest('td').css("background-color","rgb(" + (slider_value * 17) + "," + rgb[1] + "," + rgb[2] + ")"); 
+                break;
+            case "G":
+                $(this).closest('td').css("background-color","rgb(" + rgb[0] + "," + Math.ceil(slider_value*8.2258) + "," + rgb[2] + ")"); 
+                break;
+            case "B":
+                $(this).closest('td').css("background-color","rgb(" + rgb[0] + "," + rgb[1] + "," + slider_value * 17 + ")"); 
+                break;
+        }
+    };
+    
+    $(".dumpButton").click(function(){
+        var dump="unsigned int Data["+ ($(".colortable tr").length-1) +"][8]={";
+        var padding = new Array(dump.length + 1).join( "&nbsp;" );
+        var i = 1;
+        $(".colorbox").each(function(){
+            var rgb = $(this).css("background-color");
+            rgb=rgb.substring(4, rgb.length-1)
+                .replace(/ /g, '')
+                .split(',');
+            var hex=((rgb[0]&0xF8)*256+(rgb[1]&0xFC)*8+(rgb[2]&0xF8)/8).toString(16).toUpperCase();
+            switch(hex.length){
+                case 1: hex="000"+hex; break;
+                case 2: hex="00"+hex; break;
+                case 3: hex="0"+hex; break;
+            }
+            dump += "0x" + hex + ", ";
+            if( ((i % 8) == 0) && (i < ($(".colortable tr").length)*8))
+                dump += "<br>" + padding;
+            
+            i++;
+        });
+        dump = dump.substr(0, dump.length-2) + "};";
+        $("#dump").empty().html(dump);
+    });
+});
+
+
+
+</script>
+</body>
+</html>
