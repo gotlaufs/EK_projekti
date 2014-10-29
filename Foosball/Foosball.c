@@ -5,11 +5,10 @@
  *  Author: Andrew
  */ 
 
+//#define __AVR_ATtiny2313__ // MCU TYPE - Uncomment if running weird compiler
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <math.h>
-#include "../../../../../../../../Program Files/Atmel/Atmel Toolchain/AVR8 GCC/Native/3.4.2.939/avr8-gnu-toolchain/avr/include/avr/iotn2313.h"
 
 //----------definitions
 #define goal_light1 0x02	//PORTD1
@@ -103,7 +102,7 @@ void check_button()	//check if the button is pressed during all the game
 				}
 			}
 			//if hold button for a long time, reset the game
-			else if ((i == 50000) && (!(PINB & Button)){
+			else if ((i == 50000) && !(PINB & Button)){
 				player = 0;
 				goals1 = 0;
 				goals2 = 0;
