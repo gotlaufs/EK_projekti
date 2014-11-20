@@ -20,11 +20,11 @@
 #define SET_CS      GPIOC->ODR &= ~CS_PIN
 #define CLR_CS      GPIOC->ODR |=  CS_PIN
 
-volatile uint8_t LCD_RAM[84][6];
+volatile uint8_t LCD_RAM[85][6] = {{0}};
 volatile uint8_t LCD_X = 0;
 volatile uint8_t LCD_Y = 0;
 const    uint8_t init_sequence[] = {0x21,   // Switch to extended commands
-                                    0xAF,   // Set value of LCD voltage (contrast) 
+                                    0xA6,   // Set value of LCD voltage (contrast) 
                                     0x04,   // Set temperature coefficient
                                     0x13,   // Set bias mode to 1:48 (screen is multiplexed that way)
                                     0x20,   // Switch back to regular commands
@@ -242,7 +242,7 @@ void refreshSnakeTile(uint8_t x, uint8_t y)
     uint8_t lcd_tmp_y = y>>1;
     gotoX(lcd_tmp_x);
     gotoY(lcd_tmp_y);
-    for(i = 0; i < 4; i++)
+    for(i = 0; i < 5; i++)
         writeDataFast(LCD_RAM[lcd_tmp_x + i][lcd_tmp_y]);
 }
 
@@ -341,16 +341,27 @@ inline void setSnakeTailTile(enum Snake_tile tileID)
 
 void iterateSnakeHead()
 {
+    uint8_t x;
+    uint8_t y;
     /* Move the head */
     switch(snake.head.direction){
         case INITIAL:
-            setSnakeTile(12, 6, S_TD);
+            for(x = 0; x < 21; x++)
+                for(y = 0; y<10; y++)
+                    setSnakeTile(x,y,S_BLANK);
+
+            setSnakeTile(12, 1, S_TD);
+            setSnakeTile(12, 2, S_V);
+            setSnakeTile(12, 3, S_V);
+            setSnakeTile(12, 4, S_V);
+            setSnakeTile(12, 5, S_V);
+            setSnakeTile(12, 6, S_V);
             setSnakeTile(12, 7, S_V);
             setSnakeTile(12, 8, S_V);
             setSnakeTile(12, 9, S_HD);
 
             snake.tail.x = 12;
-            snake.tail.y = 6;
+            snake.tail.y = 1;
 
             snake.head.x = 12;
             snake.head.y = 9;
@@ -365,6 +376,8 @@ void iterateSnakeHead()
             snake.head.x--;
             if(snake.head.x > 20)
                 snake.head.x = 20;
+            if(Snake_array[snake.head.x][snake.head.y] != S_BLANK)
+                snake.head.direction = INITIAL;
             setSnakeHeadTile(S_HL);
             break;
 
@@ -373,6 +386,8 @@ void iterateSnakeHead()
             snake.head.x++;
             if(snake.head.x > 20)
                 snake.head.x = 0;
+            if(Snake_array[snake.head.x][snake.head.y] != S_BLANK)
+                snake.head.direction = INITIAL;
             setSnakeHeadTile(S_HR);
             break;
 
@@ -381,6 +396,8 @@ void iterateSnakeHead()
             snake.head.y--;
             if(snake.head.y > 9)
                 snake.head.y = 9;
+            if(Snake_array[snake.head.x][snake.head.y] != S_BLANK)
+                snake.head.direction = INITIAL;
             setSnakeHeadTile(S_HU);
             break;
 
@@ -389,6 +406,8 @@ void iterateSnakeHead()
             snake.head.y++;
             if(snake.head.y > 9)
                 snake.head.y = 0;
+            if(Snake_array[snake.head.x][snake.head.y] != S_BLANK)
+                snake.head.direction = INITIAL;
             setSnakeHeadTile(S_HD);
             break;
 
@@ -471,6 +490,10 @@ void moveSnake(enum snake_orientation move_direction)
             snake.head.x++;
             if(snake.head.x > 20)
                 snake.head.x = 0;
+
+            if(Snake_array[snake.head.x][snake.head.y] != S_BLANK)
+                snake.head.direction = INITIAL;
+
             setSnakeHeadTile(S_HR);
             break;
 
@@ -483,6 +506,10 @@ void moveSnake(enum snake_orientation move_direction)
             snake.head.x--;
             if(snake.head.x > 20)
                 snake.head.x = 20;
+
+            if(Snake_array[snake.head.x][snake.head.y] != S_BLANK)
+                snake.head.direction = INITIAL;
+
             setSnakeHeadTile(S_HL);
             break;
 
@@ -495,6 +522,10 @@ void moveSnake(enum snake_orientation move_direction)
             snake.head.y--;
             if(snake.head.y > 9)
                 snake.head.y = 9;
+
+            if(Snake_array[snake.head.x][snake.head.y] != S_BLANK)
+                snake.head.direction = INITIAL;
+
             setSnakeHeadTile(S_HU);
             break;
 
@@ -507,11 +538,16 @@ void moveSnake(enum snake_orientation move_direction)
             snake.head.y++;
             if(snake.head.y > 9)
                 snake.head.y = 0;
+
+            if(Snake_array[snake.head.x][snake.head.y] != S_BLANK)
+                snake.head.direction = INITIAL;
+
             setSnakeHeadTile(S_HD);
             break;
     }
 
-    snake.head.direction = move_direction;
+    if(snake.head.direction != INITIAL)
+        snake.head.direction = move_direction;
 
     iterateSnakeTail();
 }
