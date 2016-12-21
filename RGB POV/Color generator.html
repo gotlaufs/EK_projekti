@@ -219,8 +219,9 @@ $(document).ready(function(){
     };
     
     $(".dumpButton").click(function(){
-        var dump="unsigned int Data["+ ($(".colortable tr").length-1) +"][8]={";
-        var padding = new Array(dump.length + 1).join( "&nbsp;" );
+        var dump="uint16_t Data["+ ($(".colortable tr").length) +"][8]={<br>";
+        var padding = new Array(4+1).join( "&nbsp;" );
+        dump+=padding;
         var i = 1;
         $(".colorbox").each(function(){
             var rgb = $(this).css("background-color");
@@ -233,13 +234,26 @@ $(document).ready(function(){
                 case 2: hex="00"+hex; break;
                 case 3: hex="0"+hex; break;
             }
+            // Add sub-braces for each row
+            if( ((i % 8) == 1) && (i < ($(".colortable tr").length)*8))
+                dump += "{";
+
             dump += "0x" + hex + ", ";
-            if( ((i % 8) == 0) && (i < ($(".colortable tr").length)*8))
-                dump += "<br>" + padding;
+
+            if( ((i % 8) == 0) && (i < ($(".colortable tr").length)*8)){
+                dump = dump.substr(0, dump.length-2);
+                dump += "},<br>" + padding;
+            }
             
             i++;
         });
-        dump = dump.substr(0, dump.length-2) + "};";
+
+        // When no rows are created, display warning instead of dump.
+        if (i==1)
+            // If there were no "colorbox" elements, i never gets incremented.
+            dump = "Please add some rows first!"
+        else
+            dump = dump.substr(0, dump.length-2) + "}<br>};";
         $("#dump").empty().html(dump);
     });
 });
