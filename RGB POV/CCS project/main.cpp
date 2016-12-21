@@ -1,40 +1,18 @@
 /*
  * main.c
+ *
+ * TODO: Add documentation.
  */
 /*
  * Things to test:
  *
- * TODO: Test stdint variable declarations.
+ * 
  */
+
 #include <stdint.h>
-#include <msp430.h> 
-
-
-//PORT 1
-#define OE 		0x01
-#define BUTTON	0x02
-#define SCL		0x04
-#define SDA		0x08
-#define AD0		0x10
-#define INT		0x20
-
-//PORT 2
-#define STR		0x01
-#define CLK		0x02
-#define DATA 	0x04
-#define RFET 	0x08
-#define GFET 	0x10
-#define BFET 	0x20
-
-//MPU6050 I2C
-#define MPU6050_ADDRESS 0x68*2	// +0x01 for read
-#define MPU6050_RA_WHO_AM_I 0x75
-#define I2CDELAY	0
-
-//Color Bits - 0bRRRR RGGG GGGB BBBB
-#define REDB 	0xF800
-#define GREENB 	0x07E0
-#define BLUEB 	0x001F
+#include <msp430.h>
+#include "defines.h"
+#include "i2c_bitbang.h"
 
 // GLOBALS
 uint8_t ActiveColor=RFET;	//Must be non-zero
@@ -50,6 +28,7 @@ uint8_t MaxFrame=8-1;
 uint16_t Data[8][8]={0xF800, 0x07E0, 0x001F, 0xFFFF, 0x0000, 0x001F, 0x07E0, 0xF800, 0xF800, 0x07E0, 0x001F, 0x0000, 0xFFFF, 0x001F, 0x07E0, 0xF800, 0xF800, 0x07E0, 0x001F, 0xFFFF, 0x0000, 0x001F, 0x07E0, 0xF800, 0xF800, 0x07E0, 0x001F, 0x0000, 0xFFFF, 0x001F, 0x07E0, 0xF800, 0xF800, 0x07E0, 0x001F, 0xFFFF, 0x0000, 0x001F, 0x07E0, 0xF800, 0xF800, 0x07E0, 0x001F, 0x0000, 0xFFFF, 0x001F, 0x07E0, 0xF800, 0xF800, 0x07E0, 0x001F, 0xFFFF, 0x0000, 0x001F, 0x07E0, 0xF800, 0xF800, 0x07E0, 0x001F, 0x0000, 0xFFFF, 0x001F, 0x07E0, 0xF800};
 
 // Pushes a single line to the shift register. Takes into account the reversed polarity.
+
 void PushLine(uint8_t Line){
 	for(uint8_t i=0;i<8;i++){
 		if((Line>>i)&0x01)
@@ -65,66 +44,7 @@ void PushLine(uint8_t Line){
 	P2OUT&=~STR;
 }
 
-void I2C_start(void){
-	P1OUT|=SDA|SCL;
-	P1DIR|=SDA|SCL;
-	__delay_cycles(I2CDELAY);
-	P1OUT&=~SDA;
-	P1OUT&=~SCL;
-}
 
-void I2C_ack_wait(void){
-	P1DIR&=~SDA;
-	P1OUT|=SCL;
-	P1OUT&=~SCL;
-	P1DIR|=SDA;
-}
-
-void I2C_ack_give(void){
-	P1OUT&=~SDA;
-	P1DIR|=SDA;
-	P1OUT|=SCL;
-	P1OUT&=~SCL;
-}
-
-void I2C_send(uint8_t data){
-	for(uint8_t i=0;i<8;i++){
-		if(data&(0x01<<(7-i)))
-			P1OUT|=SDA;
-		__delay_cycles(I2CDELAY);
-		P1OUT|=SCL;
-		__delay_cycles(I2CDELAY);
-		P1OUT&=~(SDA|SCL);
-	}
-	I2C_ack_wait();
-}
-
-
-uint8_t I2Cread(uint8_t device_address, uint8_t reg_address){
-	//ADDRESS + REG ADDRESS
-	I2C_start();
-	//ADDRESS
-	I2C_send(device_address);
-
-	I2C_send(reg_address);
-	//ADDRESS AND RECEIVE
-	I2C_start();
-
-	I2C_send(device_address|0x01);
-
-	uint8_t received=0;
-	P1DIR&=~SDA;
-	for(uint8_t i=0;i<8;i++){
-		P1OUT|=SCL;
-		__delay_cycles(I2CDELAY);
-		received|=(P1IN&SDA)?(0x01<<(7-i)):0;
-		P1OUT&=~SCL;
-	}
-	I2C_ack_give();
-	P1OUT|=SDA|SCL;
-	P1DIR&=~(SDA|SCL);
-	return received;
-}
 // Switches MOSFET to change to next color.
 void NextColor(void){
 	ActiveColor = ((ActiveColor<<0x01)&0x38)?(ActiveColor<<0x01):RFET;
