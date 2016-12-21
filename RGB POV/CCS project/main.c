@@ -3,12 +3,16 @@
  * 
  *
  * TODO: Add documentation.
+ * TODO: Edit the color generator html to output line by line array, not one big
+ * blob, also limit line length to 80 chars.
+ * TODO: Maybe split out data to another file. Maybe not.
  */
 
 #include <stdint.h>
 #include <msp430.h>
 #include "defines.h"
 #include "i2c_bitbang.h"
+#include "hc595_bitbang.h"
 
 // GLOBALS
 uint8_t ActiveColor=RFET;	//Must be non-zero
@@ -80,12 +84,13 @@ __interrupt void TIMER0_A0 (void){
 	}
 
 	int8_t Line=0;
+	uint8_t i;
 	if((DutyFrame==0)&&(ActiveColor==BFET)){
 		if(++ActiveFrame>MaxFrame){
 			ActiveFrame=0;
 			Pause=1000;
 		}
-		for(uint8_t i=0;i<8;i++){
+		for(i=0;i<8;i++){
 			RedFrame[i]=0x1F&(Data[i][ActiveFrame]>>11);
 			GreenFrame[i]=0x1F&(Data[i][ActiveFrame]>>6);
 			BlueFrame[i]=0x1F&(Data[i][ActiveFrame]);
@@ -100,17 +105,17 @@ __interrupt void TIMER0_A0 (void){
 
 	switch(ActiveColor){
 	case RFET:
-		for(uint8_t i=0;i<8;i++)
+		for(i=0;i<8;i++)
 			if(RedFrame[i]>DutyFrame)
 				Line|=0x01<<i;
 		break;
 	case GFET:
-		for(uint8_t i=0;i<8;i++)
+		for(i=0;i<8;i++)
 			if(GreenFrame[i]>DutyFrame)
 				Line|=0x01<<i;
 		break;
 	case BFET:
-		for(uint8_t i=0;i<8;i++)
+		for(i=0;i<8;i++)
 			if(BlueFrame[i]>DutyFrame)
 				Line|=0x01<<i;
 		DutyFrame=(DutyFrame+0x01)&0x1F;

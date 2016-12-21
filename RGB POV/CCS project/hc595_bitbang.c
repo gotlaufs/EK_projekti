@@ -4,7 +4,9 @@
  *
  * TODO: Add documentation to functions.
  */
+#include <msp430.h>
 #include "hc595_bitbang.h"
+#include "defines.h"
 
 /**
  * Initialize SPI pins.
@@ -19,7 +21,8 @@ void InitSPI(void){
  * polarity.
  */
 void PushLine(uint8_t Line){
-    for(uint8_t i=0;i<8;i++){
+    uint8_t i;
+    for(i=0;i<8;i++){
         if((Line>>i)&0x01)
             P2OUT&=~DATA;
         else

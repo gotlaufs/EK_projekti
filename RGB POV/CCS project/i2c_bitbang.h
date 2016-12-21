@@ -14,5 +14,4 @@ void I2C_ack_give(void);
 void I2C_send(uint8_t data);
 uint8_t I2Cread(uint8_t device_address, uint8_t reg_address);
 
-
 #endif // _I2C_BITBANG_H_
