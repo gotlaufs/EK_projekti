@@ -31,8 +31,9 @@ uint16_t Data[8][8]={0xF800, 0x07E0, 0x001F, 0xFFFF, 0x0000, 0x001F, 0x07E0, 0xF
 // Switches MOSFET to change to next color.
 void NextColor(void){
 	ActiveColor = ((ActiveColor<<0x01)&0x38)?(ActiveColor<<0x01):RFET;
-	P2OUT|=0x38;
-	P2OUT&=~ActiveColor;
+	
+	P2OUT|=RFET|GFET|BFET; 	// All MOSFETs off.
+	P2OUT&=~ActiveColor; 	// Active color on.
 }
 
 void Initialisation(void){
@@ -93,9 +94,12 @@ __interrupt void TIMER0_A0 (void){
 		}
 	}
 
+	// Turn off shift register outputs, while loading the next color.
+	// TODO: Check if this is actually needed?
+	// Output strobe should be enough.
 	P1OUT|=OE;
 	NextColor();
-	
+
 	switch(ActiveColor){
 	case RFET:
 		for(uint8_t i=0;i<8;i++)
