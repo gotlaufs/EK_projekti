@@ -27,7 +27,7 @@
 #define GFET    0x10    // Green color enable MOSFET (active low).
 #define BFET    0x20    // Blue color enable MOSFET (active low).
 
-#define SPIDELAY    10  // SPI CLK and STR pulse length (in CPU cycles).
+#define SPIDELAY    0  // SPI CLK and STR pulse length (in CPU cycles).
 
 //MPU6050 I2C commands.
 #define MPU6050_ADDRESS 0x68*2  // +0x01 for read
