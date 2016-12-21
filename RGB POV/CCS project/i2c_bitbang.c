@@ -1,4 +1,4 @@
-/*
+/**
  *  I2C bitbang library for RGB POV EK prject.
  *
  *
@@ -17,6 +17,7 @@ void I2C_start(void){
     P1OUT&=~SCL;
 }
 
+
 void I2C_ack_wait(void){
     P1DIR&=~SDA;
     P1OUT|=SCL;
@@ -24,12 +25,14 @@ void I2C_ack_wait(void){
     P1DIR|=SDA;
 }
 
+
 void I2C_ack_give(void){
     P1OUT&=~SDA;
     P1DIR|=SDA;
     P1OUT|=SCL;
     P1OUT&=~SCL;
 }
+
 
 void I2C_send(uint8_t data){
     uint8_t i;
