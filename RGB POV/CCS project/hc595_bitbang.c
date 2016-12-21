@@ -7,6 +7,14 @@
 #include "hc595_bitbang.h"
 
 /**
+ * Initialize SPI pins.
+ */
+void InitSPI(void){
+    P2DIR|=STR|CLK|DATA;
+}
+
+
+/**
  * Pushes a single line to the shift register. Takes into account the reversed
  * polarity.
  */

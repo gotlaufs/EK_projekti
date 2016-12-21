@@ -1,12 +1,8 @@
 /**
- * main.c
+ * RTU Elektronikas Klubs RGB POV.
+ * 
  *
  * TODO: Add documentation.
- */
-/*
- * Things to test:
- *
- * 
  */
 
 #include <stdint.h>
@@ -38,9 +34,11 @@ void NextColor(void){
 
 void Initialisation(void){
 	P1OUT=0x00;
-	P2OUT=0x00|RFET|GFET|BFET;		// For the MOSFETs all to be off
+	P2OUT=0x00;
+	P2OUT|=RFET|GFET|BFET;		// For the MOSFETs all to be off
 	P1DIR=OE|AD0;
-	P2DIR=STR|CLK|DATA|RFET|GFET|BFET;
+	P2DIR|=RFET|GFET|BFET;
+	InitSPI();
 
 	BCSCTL1 = CALBC1_16MHZ;         // Set DCO to 16MHz factory calibration value
 	DCOCTL  = CALDCO_16MHZ;
