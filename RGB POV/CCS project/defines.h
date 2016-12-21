@@ -1,5 +1,5 @@
 /**
- *  Header file for global pound defines. 
+ *  Header file for global pound defines.
  *
  *  TODO: Check the usage of these defines. Maybe not sane to put everything
  *      here.

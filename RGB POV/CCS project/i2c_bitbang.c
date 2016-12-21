@@ -5,7 +5,8 @@
  * TODO: Add documentation to functions.
  */
 
-#include <msp430.h>
+
+
 #include "i2c_bitbang.h"
 #include "defines.h"
 
