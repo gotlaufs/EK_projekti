@@ -1,4 +1,4 @@
-/*
+/**
  * main.c
  *
  * TODO: Add documentation.
@@ -36,11 +36,11 @@ void PushLine(uint8_t Line){
 		else
 			P2OUT|=DATA;
 		P2OUT|=CLK;
-		__delay_cycles(10);
+		__delay_cycles(SPIDELAY);
 		P2OUT&=~CLK;
 	}
 	P2OUT|=STR;
-	__delay_cycles(10);
+	__delay_cycles(SPIDELAY);
 	P2OUT&=~STR;
 }
 
