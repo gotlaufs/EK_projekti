@@ -219,7 +219,9 @@ $(document).ready(function(){
     };
     
     $(".dumpButton").click(function(){
-        var dump="uint16_t Data["+ ($(".colortable tr").length) +"][8]={<br>";
+        var dump = "uint8_t MaxFrame=" + ($(".colortable tr").length) + "-1;<br>"
+        dump += "uint16_t Data["+ ($(".colortable tr").length) +"][8]={<br>";
+        
         var padding = new Array(4+1).join( "&nbsp;" );
         dump+=padding;
         var i = 1;
