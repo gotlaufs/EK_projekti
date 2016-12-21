@@ -47,7 +47,7 @@ void I2C_send(uint8_t data){
 }
 
 
-uint8_t I2Cread(uint8_t device_address, uint8_t reg_address){
+uint8_t I2C_read(uint8_t device_address, uint8_t reg_address){
     //ADDRESS + REG ADDRESS
     I2C_start();
     //ADDRESS

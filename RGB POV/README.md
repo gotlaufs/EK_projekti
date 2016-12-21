@@ -17,6 +17,7 @@ or B color channel.
 ## Future features:
 * Use accelerometer to sync the display to hand-waving;
 * Multiple display image support;
+* Sleep states;
 * Loading of new image via UART (don't know how feasible this is).
 
 ### Issues

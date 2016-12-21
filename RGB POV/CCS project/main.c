@@ -3,8 +3,6 @@
  *
  *
  * TODO: Add documentation.
- * TODO: Edit the color generator html to output line by line array, not one big
- * blob, also limit line length to 80 chars.
  * TODO: Maybe split out data to another file. Maybe not.
  */
 
