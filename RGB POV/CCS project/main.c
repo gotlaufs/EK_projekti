@@ -47,6 +47,7 @@ void Initialisation(void){
     P1OUT=0x00;
     P2OUT=0x00;
     P2OUT|=RFET|GFET|BFET;      // For the MOSFETs all to be off
+    P1OUT&=~OE;
     P1DIR=OE|AD0;
     P2DIR|=RFET|GFET|BFET;
     InitSPI();
@@ -54,9 +55,9 @@ void Initialisation(void){
     BCSCTL1 = CALBC1_16MHZ;     // Set DCO to 16MHz factory calibration value
     DCOCTL  = CALDCO_16MHZ;
 
-    TACTL=TASSEL_2+MC_1;        // Timer for color switch
-    CCTL0=CCIE;
-    TACCR0=1000;
+    TACTL=TASSEL_2+MC_1+TACLR;        // Timer for color switch
+    TACCR0=1100;
+    TA0CCTL0=CCIE;
     __enable_interrupt();
 }
 
@@ -76,13 +77,13 @@ int16_t main(void) {
         //P2OUT|=BFET;
         //P2OUT&=~RFET;
         //PushLine(0xFF);
-
     }
     return 0;
 }
 
 #pragma vector=TIMER0_A0_VECTOR
 __interrupt void TIMER0_A0 (void){
+    uint8_t i;
     __disable_interrupt();
     if(Pause){
         PushLine(0x00);
@@ -91,7 +92,6 @@ __interrupt void TIMER0_A0 (void){
     }
 
     int8_t Line=0;
-    uint8_t i;
     if((DutyFrame==0)&&(ActiveColor==BFET)){
         if(++ActiveFrame>MaxFrame){
             ActiveFrame=0;
@@ -104,10 +104,6 @@ __interrupt void TIMER0_A0 (void){
         }
     }
 
-    // Turn off shift register outputs, while loading the next color.
-    // TODO: Check if this is actually needed?
-    // Output strobe should be enough.
-    P1OUT|=OE;
     NextColor();
 
     switch(ActiveColor){
@@ -129,6 +125,5 @@ __interrupt void TIMER0_A0 (void){
         break;
     }
     PushLine(Line);
-    P1OUT&=~OE;
     __enable_interrupt();
 }
