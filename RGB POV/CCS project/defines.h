@@ -3,8 +3,6 @@
  *
  *  TODO: Check the usage of these defines. Maybe not sane to put everything
  *      here.
- *  TODO: Check if button is actve low or high. Most likely low. Comment it.
- *  TODO: Find out "AD0" and "INT" pin usage. Comment it.
  */
 
 #ifndef _DEFINES_H_
@@ -13,11 +11,11 @@
 // Pin defines
 //PORT 1
 #define OE      0x01    // 74HC595 Output-Enable.
-#define BUTTON  0x02    // On-board button (active ?).
+#define BUTTON  0x02    // On-board button (active low). Needs internal pull-up.
 #define SCL     0x04    // I2C Clock line.
 #define SDA     0x08    // I2C Data line.
-#define AD0     0x10    // (?).
-#define INT     0x20    // (?).
+#define AD0     0x10    // Motion sensor I2C address LSB set.
+#define INT     0x20    // Motion sensor chip interrupt digital output.
 
 //PORT 2
 #define STR     0x01    // 74HC595 Strobe input.

@@ -4,6 +4,7 @@
  *
  * TODO: Add documentation.
  * TODO: Maybe split out data to another file. Maybe not.
+ * TODO: Update README.md and everything (accelerometer->motion sensor).
  */
 
 #include <stdint.h>
@@ -81,6 +82,14 @@ int16_t main(void) {
     return 0;
 }
 
+/**
+ * TODO: "Pause" should be global var or define orsomething editable.
+ * TODO: Optimize unneccessary "PushLine()" while in Pause mode.
+ * TODO: Generally optimize output algorithm.
+ * TODO: Maybe inline NextColor() function.
+ * TODO: Make timer register naming more consistent (TA0CCR.. vs TACCR etc.)
+ * TODO: Remove TACCR0 Magic number. Create #define or something.
+ */
 #pragma vector=TIMER0_A0_VECTOR
 __interrupt void TIMER0_A0 (void){
     uint8_t i;
