@@ -1,0 +1,9 @@
+# DipTrace lock files
+~*~
+
+# DipTrace backup files
+# Example: pcb.dipb0; pcb.dipb1
+*b[0-9]
+
+# Gerber export directories
+gerber/
