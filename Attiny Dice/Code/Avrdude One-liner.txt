@@ -1,0 +1,4 @@
+One-liner for programming hex to ATTINY24A using AVRDude and USBasp
+Change "usbasp" to "avrispmkii" for AVR ISP MK II debugger
+
+avrdude -p t24 -P usb -c usbasp -U flash:w:Dice_code.hex
