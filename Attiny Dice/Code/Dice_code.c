@@ -6,6 +6,39 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+//#define V1_SMD_BOARD
+#define V2_SMD_BOARD
+
+// LED Pins defined thusly:
+// 0x0004 means PA2, 0x0200 means PB2 etc. (First 8bits - PortA, second 8bits - PortB)
+#define ONPORTA(X) (1 <<  X     )
+#define ONPORTB(X) (1 << (X + 8))
+
+#ifdef  V1_SMD_BOARD
+#define BUTTON_PIN ONPORTA(0)
+#define R2_PIN     ONPORTA(2)
+#define R3_PIN     ONPORTA(3)
+#define R4_PIN     ONPORTA(4)
+#define R5_PIN     ONPORTA(5)
+#define R6_PIN     ONPORTB(2)
+#define R7_PIN     ONPORTA(7)
+#define R8_PIN     ONPORTA(6)
+
+#elif defined   V2_SMD_BOARD
+#define BUTTON_PIN ONPORTA(3)
+#define R2_PIN     ONPORTA(5)
+#define R3_PIN     ONPORTA(0)
+#define R4_PIN     ONPORTA(1)
+#define R5_PIN     ONPORTA(4)
+#define R6_PIN     ONPORTA(7)
+#define R7_PIN     ONPORTB(2)
+#define R8_PIN     ONPORTA(6)
+
+#else
+#error Invalid board version!
+#endif
+
+
 /********************** Global variables **********************/
 /* Current position of the scrolling dice image*/
 volatile uint8_t iterator;
@@ -29,10 +62,19 @@ struct sLedRegs{
 };
 
 /* Describes register settings for lighting specific diodes in the charlieplexed matrix */
+#define PAPIN(X) ( X       & 0xFF)
+#define PBPIN(X) ((X >> 8) & 0xFF)
+#define CHARLIEPLEX(ON, OFF) PAPIN(ON) | PAPIN(OFF), PAPIN(ON), PBPIN(ON) | PBPIN(OFF), PBPIN(ON)
+// struct sLedRegs ledRegisters[3][3] = {
+//     {{0x18, 0x10, 0x00, 0x00}, {0x24, 0x20, 0x00, 0x00}, {0x40, 0x40, 0x04, 0x00}},
+//     {{0x18, 0x08, 0x00, 0x00}, {0x24, 0x04, 0x00, 0x00}, {0x40, 0x00, 0x04, 0x04}},
+//     {{0x30, 0x20, 0x00, 0x00}, {0x60, 0x40, 0x00, 0x00}, {0xC0, 0x80, 0x00, 0x00}}
+// };
+
 struct sLedRegs ledRegisters[3][3] = {
-    {{0x18, 0x10, 0x00, 0x00}, {0x24, 0x20, 0x00, 0x00}, {0x40, 0x40, 0x04, 0x00}},
-    {{0x18, 0x08, 0x00, 0x00}, {0x24, 0x04, 0x00, 0x00}, {0x40, 0x00, 0x04, 0x04}},
-    {{0x30, 0x20, 0x00, 0x00}, {0x60, 0x40, 0x00, 0x00}, {0xC0, 0x80, 0x00, 0x00}}
+    {{CHARLIEPLEX(R4_PIN, R3_PIN)}, {CHARLIEPLEX(R5_PIN, R2_PIN)}, {CHARLIEPLEX(R8_PIN, R6_PIN)}},
+    {{CHARLIEPLEX(R3_PIN, R4_PIN)}, {CHARLIEPLEX(R2_PIN, R5_PIN)}, {CHARLIEPLEX(R6_PIN, R8_PIN)}},
+    {{CHARLIEPLEX(R5_PIN, R4_PIN)}, {CHARLIEPLEX(R8_PIN, R5_PIN)}, {CHARLIEPLEX(R7_PIN, R8_PIN)}}
 };
 
 /* Frames describing the LED patterns to be shown
@@ -76,13 +118,13 @@ uint8_t frames[FULL_FRAME_COUNT] = {
 /* Returns 1 if the button at PA0 is pushed and 0 otherwise */
 inline uint8_t buttonIsPressed()
 {
-    return !(PINA & 0x01);
+    return !(PINA & BUTTON_PIN);
 }
 
 /* Turns on specified LED, if ledOn != 0 (All other LEDs are turned off, regardless) */
 void charliePlex(uint8_t x, uint8_t y, uint8_t ledOn)
 {
-    PORTA = (ledOn ? ledRegisters[y][x].OutA : 0x00) | 0x01;    /* Button @ PA0 needs a pull-up */
+    PORTA = (ledOn ? ledRegisters[y][x].OutA : 0x00) | BUTTON_PIN;    /* Button needs a pull-up */
     DDRA  =  ledOn ? ledRegisters[y][x].DirA : 0x00;
     PORTB =  ledOn ? ledRegisters[y][x].OutB : 0x00;
     DDRB  =  ledOn ? ledRegisters[y][x].DirB : 0x00;
@@ -96,7 +138,7 @@ int main(void)
 
     /* Configure button as interrupt source */
     GIMSK  = 1<<4;      /* Enable pin change 0 interrupt */
-    PCMSK0 = 0x01;      /* Set PA0 as pin change 0 interrupt generator */
+    PCMSK0 = BUTTON_PIN;/* Set button pin as pin change 0 interrupt generator */
 
     /* Set up Timer0 for LED multiplexing */
     TCCR0A = 0x02;      /* Timer mode - upon reaching OCR0A, reset timer value to 0 */
